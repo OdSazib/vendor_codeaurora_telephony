@@ -37,6 +37,7 @@ import org.codeaurora.internal.SignalStrength;
 import org.codeaurora.internal.DcParam;
 import org.codeaurora.internal.Status;
 import org.codeaurora.internal.Token;
+import org.codeaurora.internal.NrConfig;
 import org.codeaurora.internal.NrConfigType;
 import org.codeaurora.internal.BearerAllocationStatus;
 import org.codeaurora.internal.UpperLayerIndInfo;
@@ -113,6 +114,20 @@ public class NetworkCallbackBase extends INetworkCallback.Stub {
         Log.d(TAG,
                 "onEndcStatus: slotId = " + slotId + " token = " + token + " " + "status" +
                         status + " enableStatus = " + enableStatus);
+    }
+
+    @Override
+    public void onSetNrConfig(int slotId, Token token, Status status) throws
+            RemoteException {
+        Log.d(TAG, "onSetNrConfig: slotId = " + slotId + " token = " + token + " status" +
+                status);
+    }
+
+    @Override
+    public void onNrConfigStatus(int slotId, Token token, Status status, NrConfig nrConfig) throws
+            RemoteException {
+        Log.d(TAG, "onNrConfigStatus: slotId = " + slotId + " token = " + token + " status" +
+                status + " NrConfig = " + nrConfig);
     }
 
 }

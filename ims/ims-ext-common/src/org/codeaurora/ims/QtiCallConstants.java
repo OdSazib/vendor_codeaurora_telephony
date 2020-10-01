@@ -311,15 +311,22 @@ public class QtiCallConstants {
     // Recorder Auto-Scaling Factor
     public static final int RECORDER_SCALING_FACTOR = 8;
 
+    // Refer to ImsConfigImplBase CONFIG_RESULT_* codes
+    public static final int CONFIG_RESULT_NOT_SUPPORTED = 2;
     /**
-     * Whether auto reject is enabled for IMS calls on a sub when high priority data
+     * Auto reject call options - for IMS calls on a sub when high priority data
      * is on the other sub
-     * Type: int (0 for disabled, 1 for enabled)
+     * Type: int (0 for default, 1 for auto reject, 2 for allow alerting)
      */
-    public static final String IMS_AUTO_REJECT = "qti.settings.auto_reject";
-    // Auto reject call modes
-    public static final int AUTO_REJECT_CALL_DISABLED = 0;
-    public static final int AUTO_REJECT_CALL_ENABLED = 1;
+    public static final String IMS_AUTO_REJECT_MODE = "qti.settings.auto_reject";
+    // auto reject call modes
+    // user is notified of incoming call
+    public static final int AR_MODE_ALLOW_INCOMING = 0;
+    // incoming call is auto rejected
+    public static final int AR_MODE_AUTO_REJECT = 1;
+    // user is usually alerted of incoming call but auto rejected in certain cases
+    // modem may have some optimization
+    public static final int AR_MODE_ALLOW_ALERTING = 2;
     // Auto reject call UI item, avoid conflicting values from ImsCallUtils.ConfigItem
     public static final int AUTO_REJECT_CALL_MODE = 1000;
     public static final int QTI_CONFIG_SMS_APP = 1001;

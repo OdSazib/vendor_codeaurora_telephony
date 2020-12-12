@@ -629,6 +629,11 @@ public class QtiImsExtUtils {
                 QtiCallConstants.IMS_AUTO_REJECT_MODE + phoneId, arMode);
     }
 
+    // Obtain compatibility with older ims.apk and forward the old call to the new method
+    public static int getAutoReject(ContentResolver contentResolver, int phoneId) {
+        return getAutoRejectMode(contentResolver, phoneId);
+    }
+
     // Supported for multi sim only.
     public static int getAutoRejectMode(ContentResolver contentResolver, int phoneId) {
         return android.provider.Settings.Global.getInt(contentResolver,

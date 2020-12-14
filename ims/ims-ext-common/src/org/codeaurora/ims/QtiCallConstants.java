@@ -314,6 +314,15 @@ public class QtiCallConstants {
     // Refer to ImsConfigImplBase CONFIG_RESULT_* codes
     public static final int CONFIG_RESULT_NOT_SUPPORTED = 2;
     /**
+     * Whether auto reject is enabled for IMS calls on a sub when high priority data
+     * is on the other sub
+     * Type: int (0 for disabled, 1 for enabled)
+     */
+    public static final String IMS_AUTO_REJECT = "qti.settings.auto_reject";
+    // Auto reject call modes
+    public static final int AUTO_REJECT_CALL_DISABLED = 0;
+    public static final int AUTO_REJECT_CALL_ENABLED = 1;
+    /**
      * Auto reject call options - for IMS calls on a sub when high priority data
      * is on the other sub
      * Type: int (0 for default, 1 for auto reject, 2 for allow alerting)

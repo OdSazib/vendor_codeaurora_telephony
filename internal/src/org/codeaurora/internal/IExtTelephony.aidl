@@ -39,6 +39,7 @@ import org.codeaurora.internal.Token;
 import org.codeaurora.internal.DcParam;
 import org.codeaurora.internal.INetworkCallback;
 import org.codeaurora.internal.Client;
+import org.codeaurora.internal.NrConfig;
 
 /**
  * Interface used to interact with the telephony framework for
@@ -434,5 +435,28 @@ interface IExtTelephony {
     * @return - string value assigned
     */
     String getPropertyValueString(String property, String def);
+
+    /**
+    * Set nr config to NSA/SA/NSA+SA on a given slotId.
+    * @param - slotId
+    * @param - def
+    *        NR_CONFIG_INVALID  - invalid config
+    *        NR_CONFIG_COMBINED_SA_NSA - set to NSA+SA
+    *        NR_CONFIG_NSA - set to NSA
+    *        NR_CONFIG_SA - set to SA
+    *  @param - client registered with packagename to receive
+    *         callbacks.
+    * @return Integer Token to be used to compare with the response.
+    */
+    Token setNrConfig(int slotId, in NrConfig def, in Client client);
+
+    /**
+    * Query current nr config on a given slotId.
+    * @param - slotId
+    *  @param - client registered with packagename to receive
+    *         callbacks.
+    * @return Integer Token to be used to compare with the response.
+    */
+    Token queryNrConfig(int slotId, in Client client);
 
 }

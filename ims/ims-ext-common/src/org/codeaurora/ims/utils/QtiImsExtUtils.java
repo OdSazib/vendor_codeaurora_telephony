@@ -76,6 +76,23 @@ public class QtiImsExtUtils {
     public static final String QTI_IMS_STATIC_IMAGE_SETTING =
             "ims_vt_call_static_image";
 
+    /* name for call transfer setting */
+    private static final String IMS_CALL_TRANSFER_SETTING = "ims_call_transfer";
+
+    /**
+     * Definitions for the call transfer type. For easier implementation,
+     * the transfer type is defined as a bit mask value.
+     */
+    //Value representing blind call transfer type
+    public static final int QTI_IMS_BLIND_TRANSFER = 0x01;
+    //Value representing assured call transfer type
+    public static final int QTI_IMS_ASSURED_TRANSFER = 0x02;
+    //Value representing consultative call transfer type
+    public static final int QTI_IMS_CONSULTATIVE_TRANSFER = 0x04;
+
+    /* Call transfer extra key */
+    public static final String QTI_IMS_TRANSFER_EXTRA_KEY = "transferType";
+
     /* Ims phoneId extra key */
     public static final String QTI_IMS_PHONE_ID_EXTRA_KEY = "phoneId";
 
@@ -370,6 +387,15 @@ public class QtiImsExtUtils {
      */
     public static boolean shallShowVideoQuality(int phoneId, Context context) {
         return isCarrierConfigEnabled(phoneId, context, QtiCarrierConfigs.SHOW_VIDEO_QUALITY_UI);
+    }
+
+    /***
+     * Checks if the IMS call transfer property is enabled or not.
+     * Returns true if enabled, or false otherwise.
+     */
+    public static boolean isCallTransferEnabled(Context context) {
+        return Settings.Global.getInt(context.getContentResolver(), IMS_CALL_TRANSFER_SETTING, 0)
+                == 1;
     }
 
    /**

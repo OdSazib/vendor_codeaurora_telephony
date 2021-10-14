@@ -35,6 +35,8 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.net.Uri;
+import android.os.ParcelFileDescriptor;
 import android.os.PersistableBundle;
 import android.os.SystemProperties;
 import android.provider.Settings;
@@ -45,6 +47,11 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.lang.IllegalArgumentException;
+import java.lang.SecurityException;
 
 import org.codeaurora.ims.QtiCallConstants;
 import org.codeaurora.ims.QtiCarrierConfigs;
@@ -128,7 +135,6 @@ public class QtiImsExtUtils {
     public static final int QTI_IMS_VOLTE_PREF_ON = 1;
     //Value representing volte preference is NOT known
     public static final int QTI_IMS_VOLTE_PREF_UNKNOWN = 2;
-
 
     /* Incoming conference call extra key */
     public static final String QTI_IMS_INCOMING_CONF_EXTRA_KEY = "incomingConference";
@@ -214,13 +220,12 @@ public class QtiImsExtUtils {
                                      QTI_IMS_STATIC_IMAGE_SETTING);
     }
 
-    private static boolean isValidUriStr(String uri) {
+    private static boolean isValidUriStr(String uriStr) {
         /* uri is not valid if
-         * 1. uri is null
-         * 2. uri is empty
-         * 3. uri doesn't exist in UE
+         * 1. uriStr is null
+         * 2. uriStr is empty
          */
-        return uri != null && !uri.isEmpty() && (new File(uri)).exists();
+        return uriStr != null && !uriStr.isEmpty();
     }
 
     /**
@@ -265,28 +270,54 @@ public class QtiImsExtUtils {
      * Decodes an image pointed to by uri as per requested Width and requested Height
      * and returns a bitmap
      */
-    public static Bitmap decodeImage(String uri, int reqWidth, int reqHeight) {
-        if (uri == null) {
+    public static Bitmap decodeImage(String uriStr, Context context, int reqWidth, int reqHeight) {
+        if (uriStr == null) {
             return null;
         }
+        ParcelFileDescriptor parcelFileDescriptor = null;
 
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        // Each pixel is stored on 4 bytes
-        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-        /* If set to true, the decoder will return null (no bitmap),
-           but the out... fields (i.e. outWidth, outHeight and outMimeType)
-           will still be set, allowing the caller to query the bitmap
-           without having to allocate the memory for its pixels */
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(uri, options);
+        Uri uri = Uri.parse(uriStr);
 
-        // Calculate inSampleSize
-        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+        try {
+            parcelFileDescriptor = context.getContentResolver().openFileDescriptor(uri, "r");
+            FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
 
-        // Decode bitmap with inSampleSize set
-        options.inJustDecodeBounds = false;
-        Bitmap bitmap = BitmapFactory.decodeFile(uri, options);
-        return scaleImage(bitmap, reqWidth, reqHeight);
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            // Each pixel is stored on 4 bytes
+            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+            /* If set to true, the decoder will return null (no bitmap),
+               but the out... fields (i.e. outWidth, outHeight and outMimeType)
+               will still be set, allowing the caller to query the bitmap
+               without having to allocate the memory for its pixels */
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeFileDescriptor(fileDescriptor, null, options);
+
+            // Calculate inSampleSize
+            options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+
+            // Decode bitmap with inSampleSize set
+            options.inJustDecodeBounds = false;
+            Bitmap image = BitmapFactory.decodeFileDescriptor(fileDescriptor, null, options);
+
+            return scaleImage(image, reqWidth, reqHeight);
+        } catch (FileNotFoundException e) {
+            Log.e(LOG_TAG, "File not found for uri: " + uri + " exception : " + e);
+        } catch (IllegalArgumentException e) {
+            Log.e(LOG_TAG, "Check arguments passed to decodeFileDescriptor, exception : " + e);
+        } catch (SecurityException e) {
+            //If the selected static image file located under file path "/sdcard/" is deleted,
+            //SecurityException is thrown by ContentResolver#openFileDescriptor.
+            Log.e(LOG_TAG, "SecurityException, exception : " + e);
+        } finally {
+            try {
+                if (parcelFileDescriptor != null) {
+                    parcelFileDescriptor.close();
+                }
+            } catch (IOException e) {
+                Log.e(LOG_TAG, "Closing parcelFileDescriptor " + " exception : " + e);
+            }
+        }
+        return null;
     }
 
     // scales the image using reqWidth/reqHeight and returns a scaled bitmap
@@ -358,7 +389,7 @@ public class QtiImsExtUtils {
             throw new QtiImsException("invalid file path");
         }
 
-        Bitmap imageBitmap = decodeImage(uriStr, reqWidth, reqHeight);
+        Bitmap imageBitmap = decodeImage(uriStr, context, reqWidth, reqHeight);
         if (imageBitmap == null) {
             throw new QtiImsException("image decoding error");
         }
@@ -542,6 +573,24 @@ public class QtiImsExtUtils {
                     Settings.Secure.RTT_CALLING_MODE + convertRttPhoneId(phoneId), value ? 1 : 0);
     }
 
+    // Sets global settings with call type preference
+    public static void setCanStartRttCall(boolean value, Context context, int phoneId) {
+        android.provider.Settings.Global.putInt(context.getContentResolver(),
+                    QtiCallConstants.QTI_IMS_CAN_START_RTT_CALL + convertRttPhoneId(phoneId),
+                    value ? QtiCallConstants.RTT_CALL_TYPE_VOICE
+                          : QtiCallConstants.RTT_CALL_TYPE_RTT);
+    }
+
+    // Returns true if can start RTT call
+    public static boolean canStartRttCall(Context context, int phoneId) {
+        if (!shallShowRttVisibilitySetting(phoneId, context)) {
+            return true;
+        }
+        return android.provider.Settings.Global.getInt(context.getContentResolver(),
+                QtiCallConstants.QTI_IMS_CAN_START_RTT_CALL + convertRttPhoneId(phoneId),
+                QtiCallConstants.RTT_CALL_TYPE_RTT) == QtiCallConstants.RTT_CALL_TYPE_RTT;
+    }
+
     // Returns value of RTT visibility
     public static int getRttVisibility(Context context) {
         return getRttVisibility(context, QtiCallConstants.RTT_DEFAULT_PHONE_ID);
@@ -573,39 +622,45 @@ public class QtiImsExtUtils {
     // Returns true if Carrier supports RTT auto upgrade
     public static boolean isRttAutoUpgradeSupported(int phoneId, Context context) {
         return isCarrierConfigEnabled(phoneId, context,
-            "rtt_auto_upgrade_bool");
+            CarrierConfigManager.KEY_RTT_AUTO_UPGRADE_BOOL);
     }
 
     // Returns true if Carrier supports RTT for Video Calls
     public static boolean isRttSupportedOnVtCalls(int phoneId, Context context) {
         return isCarrierConfigEnabled(phoneId, context,
-            "rtt_supported_for_vt_bool");
+            CarrierConfigManager.KEY_RTT_SUPPORTED_FOR_VT_BOOL);
     }
 
     // Returns true if Carrier supports RTT upgrade
     // False otherwise
     public static boolean isRttUpgradeSupported(int phoneId, Context context) {
         return isCarrierConfigEnabled(phoneId, context,
-            "rtt_upgrade_supported_bool");
+            CarrierConfigManager.KEY_RTT_UPGRADE_SUPPORTED_BOOL);
     }
 
-    // Utility to get the RTT Mode that is set through adb property
-    // Mode can be either RTT_MODE_DISABLED or RTT_MODE_FULL
+    // Utility to get the RTT Mode that is set through ImsSettings
+    // Mode can be either RTT_UPON_REQUEST_MODE or RTT_AUTOMATIC_MODE
     public static int getRttOperatingMode(Context context) {
         return getRttOperatingMode(context, QtiCallConstants.RTT_DEFAULT_PHONE_ID);
     }
 
+    // Utility to get the RTT Operation Mode that is set through ImsSettings
+    // Mode can be either RTT_UPON_REQUEST_MODE or RTT_AUTOMATIC_MODE
+    // Takes a phoneId to support DSDS configuration.
     public static int getRttOperatingMode(Context context, int phoneId) {
-        int mode = SystemProperties.getInt(QtiCallConstants.PROPERTY_RTT_OPERATING_MODE +
-                convertRttPhoneId(phoneId), 0);
-        return mode;
+        if (shallShowRttVisibilitySetting(phoneId, context)) {
+            return QtiCallConstants.RTT_AUTOMATIC_MODE;
+        }
+        return android.provider.Settings.Global.getInt(context.getContentResolver(),
+                QtiCallConstants.QTI_IMS_RTT_OPERATING_MODE + convertRttPhoneId(phoneId),
+                QtiCallConstants.RTT_UPON_REQUEST_MODE);
     }
 
     // Returns true if Carrier supports RTT downgrade
     // False otherwise
     public static boolean isRttDowngradeSupported(int phoneId, Context context) {
         return isCarrierConfigEnabled(phoneId, context,
-            "rtt_downgrade_supported_bool");
+            CarrierConfigManager.KEY_RTT_DOWNGRADE_SUPPORTED_BOOL);
     }
 
     // Returns true if Carrier support RTT visibility setting
@@ -613,6 +668,13 @@ public class QtiImsExtUtils {
     public static boolean shallShowRttVisibilitySetting(int phoneId, Context context) {
         return (isCarrierConfigEnabled(phoneId, context,
                 QtiCarrierConfigs.KEY_SHOW_RTT_VISIBILITY_SETTING));
+    }
+
+    // Returns true if Carrier supports merging RTT calls
+    // False otherwise
+    public static boolean isRttMergeSupported(int phoneId, Context context) {
+        return isCarrierConfigEnabled(phoneId, context,
+            "allow_merging_rtt_calls_bool");
     }
 
     // Returns true if Carrier supports Cancel Modify Call
@@ -679,6 +741,15 @@ public class QtiImsExtUtils {
                 QtiCallConstants.CALL_COMPOSER_DISABLED);
     }
 
+    // Sets RTT Operation Mode to global settings
+    // Takes a phoneId to support DSDS configuration.
+    public static void setRttOperatingMode(ContentResolver contentResolver, int phoneId,
+            int rttOpMode) {
+        android.provider.Settings.Global.putInt(contentResolver,
+                QtiCallConstants.QTI_IMS_RTT_OPERATING_MODE + convertRttPhoneId(phoneId),
+                rttOpMode);
+    }
+
     // Returns true if Carrier supports video CRS
     public static boolean isVideoCrsSupported(int phoneId, Context context) {
         return isCarrierConfigEnabled(phoneId, context,
@@ -695,5 +766,23 @@ public class QtiImsExtUtils {
     public static boolean isCallProgressNotificationSupported(int phoneId, Context context) {
         return isCarrierConfigEnabled(phoneId, context,
                 QtiCarrierConfigs.KEY_CARRIER_CALL_PROGRESS_NOTIFICATION_SUPPORTED);
+    }
+
+    /**
+     * Retrieves the customer service numbers stored for specific operator
+     * Returns stored numbers, or null otherwise.
+     */
+    public static String[] getCustomerServiceNumbers(int phoneId, Context context) {
+        return QtiCarrierConfigHelper.getInstance().getStringArray(context, phoneId,
+                QtiCarrierConfigs.KEY_CARRIER_VIDEO_CUSTOMER_SERVICE_NUMBERS);
+    }
+
+    /**
+     * Returns true if carrier supports set media config(screen size, max
+     * avc/hevc resolution) to modem.
+     */
+    public static boolean isSendMediaConfigurationSupported(int phoneId, Context context) {
+        return isCarrierConfigEnabled(phoneId, context,
+                QtiCarrierConfigs.KEY_CARRIER_SEND_MEDIA_CONFIG_SUPPORTED);
     }
 }

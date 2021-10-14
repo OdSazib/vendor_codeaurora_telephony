@@ -288,4 +288,35 @@ interface IQtiImsExt {
     * Returns the ICrsCrbtnterface IBinder
     */
     ICrsCrbtController getCrsCrbtController(int phoneId);
+
+   /**
+     * queryCallForwardStatus
+     * gets a call forwarding option.
+     *
+     * @param phoneId indicates the phone instance which triggered the request
+     * @param reason is one of the valid call forwarding
+     *        CF_REASONS, as defined in
+     *        <code>com.android.internal.telephony.CommandsInterface.</code>
+     * @param serviceClass is service class, that is used to get CFT
+     *        SERVICE_CLASS, as defined in
+     *        <code>com.android.internal.telephony.CommandsInterface.</code>
+     * @param listener an IQtiImsExtListener instance to indicate the response
+     * @param expectMore flag to indicate call forward callforward requests are in line.
+     * @return void
+     */
+    oneway void queryCallForwardStatus(int phoneId, int reason, int serviceClass,
+            boolean expectMore, IQtiImsExtListener listener);
+
+
+    /**
+     * Retrieves the configuration of the call barring for specified service class.
+     *
+     * @param cbType type of call barring to be queried; ImsUtInterface#CB_XXX
+     * @param result message to pass the result of this operation
+     *      The return value of ((AsyncResult)result.obj) is an array of {@link ImsSsInfo}.
+     * @param serviceClass service class for e.g. voice/video
+     * @param expectMore flag to indicate call forward callbarring requests are in line.
+     */
+    oneway void queryCallBarring(int phoneId, int cbType, String password, int serviceClass,
+            boolean expectMore, IQtiImsExtListener listener);
 }

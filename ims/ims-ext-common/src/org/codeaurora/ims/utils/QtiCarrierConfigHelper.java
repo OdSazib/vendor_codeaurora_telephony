@@ -226,6 +226,21 @@ public class QtiCarrierConfigHelper {
         return false;
     }
 
+    public String[] getStringArray(Context context, int phoneId, String key) {
+        if (!isValidPhoneId(phoneId)) {
+            Log.d(TAG, "Invalid phone ID: " + phoneId);
+            return null;
+        }
+        sanityCheckConfigsLoaded(context, phoneId);
+        logd("getString", "mInitialized - " + mInitialized.get() + " context - " + context);
+        PersistableBundle pb = mConfigsMap.get(phoneId);
+        if (pb != null) {
+            return pb.getStringArray(key);
+        }
+        Log.d(TAG, "WARNING, no carrier configs on phone Id: " + phoneId);
+        return null;
+    }
+
     private static void logd(String tag, String msg) {
         if (DEBUG) {
             android.util.Log.d(TAG, tag + DELIMITER + msg);

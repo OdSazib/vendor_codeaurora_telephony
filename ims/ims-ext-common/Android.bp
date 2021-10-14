@@ -1,6 +1,7 @@
 
 java_library {
     name: "ims-ext-common",
+    provides_uses_lib: "ims-ext-common",
     installable: true,
     sdk_version: "system_current",
     aidl: {

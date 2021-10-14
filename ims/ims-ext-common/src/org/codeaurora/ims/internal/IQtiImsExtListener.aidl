@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2016, 2019-2020 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2015-2016, 2019-2021 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -179,4 +179,17 @@ oneway interface IQtiImsExtListener {
      *
      */
    void onUssdFailed(int phoneId, int type, int errorCode, String errorMessage);
+
+   /**
+     * @param phoneId indicates the phone instance which triggered the request
+     * @param cfInfoList array of ImsCallForwardInfo
+     * @return void.
+     */
+   void queryCallForwardStatusResponse(int phoneId, in ImsCallForwardInfo[] cfInfoList);
+
+   /**
+     * @param response indicates the callbarring status enabled or disabled.
+     */
+   void queryCallBarringResponse(in int[] response);
+
 }

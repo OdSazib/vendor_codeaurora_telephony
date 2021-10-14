@@ -1,4 +1,4 @@
-/* Copyright (c) 2016, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2015, 2019-2021 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -25,22 +25,23 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 package org.codeaurora.ims;
 
 /**
- * This class is to handle custom unsupported image format exception
+ * The class contains definitions for Qti specific call extras related to value added features.
  */
-public class QtiImsUnsupportedImageFormatException extends QtiImsException {
+/**
+ * @hide
+ */
+public class QtiCallExtras {
 
-    public QtiImsUnsupportedImageFormatException() {
-        // Empty constructor
-    }
+    /* Call History Info extra key. The value will be a ArrayList of Strings. */
+    public static final String EXTRAS_CALL_HISTORY_INFO = "CallHistoryInfo";
 
-    public QtiImsUnsupportedImageFormatException(String message) {
-        super(message);
-    }
+    /* Call Diversion Info extra key. The value will be a ArrayList of Strings. */
+    public static final String EXTRAS_CALL_DIVERSION_INFO = "CallDiversionInfo";
 
-    public QtiImsUnsupportedImageFormatException(String message, Throwable cause) {
-        super(message, cause);
-    }
+    /* MT DTMF Info extra key. The value will be a String. */
+    public static final String EXTRAS_INCOMING_DTMF_INFO = "IncomingDtmfInfo";
 }

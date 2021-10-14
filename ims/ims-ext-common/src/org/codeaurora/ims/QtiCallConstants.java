@@ -68,9 +68,6 @@ public class QtiCallConstants {
     /* Call encryption status extra key. The value will be a boolean. */
     public static final String CALL_ENCRYPTION_EXTRA_KEY = "CallEncryption";
 
-    /* Call History Info extra key. The value will be a ArrayList of Strings. */
-    public static final String EXTRAS_CALL_HISTORY_INFO = "CallHistoryInfo";
-
     /* Call fail code extra key name */
     public static final String EXTRAS_KEY_CALL_FAIL_EXTRA_CODE  = "CallFailExtraCode";
 
@@ -101,8 +98,16 @@ public class QtiCallConstants {
 
     /* call fail error code to retry ims call without rtt */
     public static final int CODE_RETRY_ON_IMS_WITHOUT_RTT = 3001;
+
     /* Unknown disconnect cause */
     public static final int DISCONNECT_CAUSE_UNSPECIFIED = -1;
+
+    /* Call fail error code due to concurrent calls not possible, {link@ ImsReasonInfo#
+     * CODE_CONCURRENT_CALLS_NOT_POSSIBLE} */
+    public static final int CODE_CONCURRENT_CALLS_NOT_POSSIBLE = 3002;
+
+    // Default code to use for additional call info code.
+    public static final int CODE_UNSPECIFIED = -1;
 
     /**
      * Whether the IMS to CS retry is enabled
@@ -255,9 +260,16 @@ public class QtiCallConstants {
      * For TMO - 0 : Upon Request Mode (Disabled)
      *           1 : Automatic Mode (Full)
      * For Vzw - 1 : Automatic Mode (Full)
-     *
      */
-    public static final String PROPERTY_RTT_OPERATING_MODE = "persist.vendor.radio.rtt.operval";
+    public static final String QTI_IMS_RTT_OPERATING_MODE = "qti.settings.rtt_operation";
+
+    /**
+     * Whether dialing normal call is ON or OFF
+     * The value 1 - enable (Voice call), 0 - disable (RTT call)
+     * This is set through ImsSettings UI
+     */
+    public static final String QTI_IMS_CAN_START_RTT_CALL =
+            "qti.settings.can_start_rtt_call";
 
     // RTT default phone id
     public static final int RTT_DEFAULT_PHONE_ID = 0;
@@ -274,39 +286,18 @@ public class QtiCallConstants {
     // RTT Visibility On
     public static final int RTT_VISIBILITY_ENABLED = 1;
 
-   /**
-     * Broadcast Action: Send RTT Text Message
-     */
-    public static final String ACTION_SEND_RTT_TEXT =
-            "org.codeaurora.intent.action.send.rtt.text";
+    // RTT Call Type Off
+    public static final int RTT_CALL_TYPE_RTT = 0;
 
-   /**
-     * RTT Text Value
-     */
-    public static final String RTT_TEXT_VALUE =
-            "org.codeaurora.intent.action.rtt.textvalue";
+    // RTT Call Type On
+    public static final int RTT_CALL_TYPE_VOICE = 1;
 
-   /**
-     * Broadcast Action: RTT Operation
-     */
-    public static final String ACTION_RTT_OPERATION =
-            "org.codeaurora.intent.action.send.rtt.operation";
-
-   /**
-     * RTT Operation Type
-     */
-    public static final String RTT_OPERATION_TYPE =
-            "org.codeaurora.intent.action.rtt.operation.type";
-
-    // RTT Operation Type can be one of the following
-    // To request upgrade of regular call to RTT call
-    public static final int RTT_UPGRADE_INITIATE = 1;
-    // To accept incoming RTT upgrade request
-    public static final int RTT_UPGRADE_CONFIRM = 2;
-    // To reject incoming RTT upgrade request
-    public static final int RTT_UPGRADE_REJECT = 3;
-    // To request downgrade of RTT call to regular call
-    public static final int RTT_DOWNGRADE_INITIATE = 4;
+    // RTT Operating mode
+    // Dials normal voice call by default and provides an option
+    // to upgrade call to RTT in InCallUi.
+    public static final int RTT_UPON_REQUEST_MODE = 0;
+    // All the calls dialed are RTT calls by default.
+    public static final int RTT_AUTOMATIC_MODE = 1;
 
     // Recorder Auto-Scaling Factor
     public static final int RECORDER_SCALING_FACTOR = 8;
@@ -437,4 +428,19 @@ public class QtiCallConstants {
     public static final String EXTRAS_CALL_PROGRESS_INFO_TYPE = "CallProgInfoType";
     public static final String EXTRAS_CALL_PROGRESS_REASON_CODE = "CallProgReasonCode";
     public static final String EXTRAS_CALL_PROGRESS_REASON_TEXT = "CallProgReasonText";
+
+    /*Sms call back constants*/
+    public static final int SCBM_STATUS_EXIT = 0;
+    public static final int SCBM_STATUS_ENTER = 1;
+
+    /**
+     * Intent action broadcasted when Sms Callback Mode is changed
+     */
+    public static final String ACTION_SMS_CALLBACK_MODE =
+            "org.codeaurora.intent.action.SMS_CALLBACK_MODE";
+    /**
+     * Extra key for when modem enters/exits sms callback mode.
+     * Type: boolean
+     */
+    public static String EXTRA_SMS_CALLBACK_MODE = "sms_callback_mode";
 }

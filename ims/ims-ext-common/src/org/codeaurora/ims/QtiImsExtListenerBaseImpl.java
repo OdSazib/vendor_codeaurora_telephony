@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2017, 2019-2020 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2015-2017, 2019-2021 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,6 +29,7 @@
 package org.codeaurora.ims;
 
 import org.codeaurora.ims.internal.IQtiImsExtListener;
+import android.telephony.ims.ImsCallForwardInfo;
 
 /**
  * This class contains default implementation for IQtiImsExtListener.
@@ -92,6 +93,14 @@ public class QtiImsExtListenerBaseImpl extends IQtiImsExtListener.Stub {
     @Override
     public void onUssdFailed(int phoneId, int type, int errorCode,
             String errorMessage) {
+    }
+
+    @Override
+    public void queryCallForwardStatusResponse(int phoneId, ImsCallForwardInfo[] cfInfoList) {
+    }
+
+    @Override
+    public void queryCallBarringResponse(int[] response) {
     }
 }
 

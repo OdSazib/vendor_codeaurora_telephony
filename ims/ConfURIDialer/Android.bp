@@ -5,9 +5,9 @@ android_app {
 
     srcs: ["**/*.java"],
 
-    platform_apis: true,
+    sdk_version: "system_current",
 
     certificate: "platform",
 
-    system_ext_specific: true
+    product_specific: true
 }
